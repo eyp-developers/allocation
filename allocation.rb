@@ -42,7 +42,7 @@ abort("Not enough choices for all people") if $choices.length < $people.length
 
 # Variables to save optimal solution
 $highscore = 0
-$optimum = Hash.new
+$optimum = Array.new
 
 # Calculate score of a given allocation
 def calculate_score(allocation)
@@ -63,35 +63,33 @@ end
 
 # Recursive method to find best allocation
 def fill(current, pers_i)
-    # If one of the previous people has not been allocated, there is no solution
-    has_solution = true
-    $people[0..pers_i-1].each { |person| has_solution = has_solution && !current[person].nil? } unless pers_i == 0
-
     # When leaf is reached, 
-    if has_solution && pers_i == $people.length
+    if pers_i == $people.length
         this_score = calculate_score current
         if this_score == $highscore
-            $optimum  = [$optimum, current.clone]
+            $optimum << current
             puts "Found another one with score #{this_score}" if $debug
             puts $optimum if $debug
         elsif this_score > $highscore
             $highscore = this_score
-            $optimum = current.clone
+            $optimum = [current]
             puts "Found one with score #{this_score}" if $debug
             puts $optimum if $debug
+        else
+            puts "Rejected with score #{this_score}" if $debug
+            pp current if $debug
         end
-    # Continue recursion down the solution tree if solution exists, abort otherwise
-    elsif has_solution
+    # Continue recursion down the solution tree
+    else
         # Try choices sorted by weight
         ordered = $preferences[$people[pers_i]].sort_by {|k,v| v }.reverse
         ordered.each do |choice|
             # If choice has not been allocated before, continue recursion
-            previous = current
-            previous = current.reject { |person| !$people[0..pers_i-1].include?(person)} unless pers_i==0
-            unless previous.values.include?(choice[0])
+            unless current.values.include?(choice[0])
                 current[$people[pers_i]] = choice[0]
-                fill(current, pers_i+1) if continue?(current,pers_i) # continue recursion only if highscore can possibly be reached
-                current[$people[pers_i]] = nil
+                fill(current.clone, pers_i+1) if continue?(current,pers_i) # continue recursion only if highscore can possibly be reached
+                puts "Stopped exploring trying to allocate #{$people[pers_i]} to #{choice[0]} " if !continue?(current,pers_i) && $debug
+                pp current if !continue?(current,pers_i) && $debug
             end
         end
     end
@@ -101,5 +99,5 @@ end
 fill(Hash.new, 0)
 
 # Print solution
-puts "Score: #{$highscore} with solution:"
+puts "Number of solutions: #{$optimum.length}\nScore: %.2f" % $highscore
 pp $optimum
