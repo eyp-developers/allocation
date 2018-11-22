@@ -1,4 +1,4 @@
-# Weighted preferences allocation command line tool
+# Weighted choice allocation command line tool
 
 ## Getting Started
 
@@ -8,7 +8,7 @@ This tool requires [Ruby](https://www.ruby-lang.org/en/).
 
 Usage: ruby allocation.rb \[-h\]\[-v\] path/to/file
 
-Format of preferences in a .csv file:
+Format of choices in a .csv file:
 
 ```tex
 Name,Topic 1,Topic 2
